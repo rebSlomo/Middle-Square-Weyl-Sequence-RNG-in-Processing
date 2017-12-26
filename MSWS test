@@ -1,4 +1,4 @@
-// demonstrates how to set up two independent MSWS RNG
+// demonstrates how to set up independent MSWS RNGs
 // different seeds maybe used for each
 
 void setup()
