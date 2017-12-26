@@ -1,114 +1,124 @@
 class randomizer
 // Middle Square Weyl Sequence RNG
-// written by Gabor Somogyi (rev 2017.12.21) based on
+// written by Gabor Somogyi (rev 2017.12.26) based on
 // https://arxiv.org/pdf/1704.00358.pdf
 // Bernard Widynski - April 4, 2017
 {
-int[] x = { 0,0,0,0,0,0,0,0 };
-int[] w = { 0,0,0,0,0,0,0,0 };
-int[] s = { 0xa9,0xe2,0x1c,0xda,0xce,0x4e,0xad,0xb5 };
-
-randomizer()
-{}
-
-//=======================================================================
-
-float msws()
-{
-  x = mul64(x,x);
-  w = add64(w,s);
-  x = add64(x,w); 
-  x = sft64(x);
-  return(((((x[3]*256.0)+x[2])*256.0+x[1])*256.0+x[0])*1E-10);
-}
-
-//=======================================================================
-
-int[] add64 (int[] a, int[] b)
-{
-  int[] r = {0,0,0,0,0,0,0,0,0};  // result has max 9 digits (only 8 to be used)
-  for (int i=0; i<8; i++)
+  int[] x = { 0,0,0,0,0,0,0,0 };
+  int[] w = { 0,0,0,0,0,0,0,0 };
+  int[] s = { 0xa9,0xe2,0x1c,0xda,0xce,0x4e,0xad,0xb5 };
+  
+  randomizer()
+  {}
+  
+  //=======================================================================
+  
+  // generates a random float between 0.0 (included) and 1.0 (excluded)
+  float msws()
   {
-    r[i] += a[i] + b[i]; 
-    if (r[i]>255) 
-    { 
-      r[i] -= 256; 
-      r[i+1] = 1; 
-    }  
+    x = mul64(x,x);
+    w = add64(w,s);
+    x = add64(x,w); 
+    x = sft64(x);
+    return(((((x[0]/256.0)+x[1])/256.0+x[2])/256.0+x[3])/256.0);
   }
-  return(r);
-}
-
-//=======================================================================
-
-int[] mul64 (int[] a, int[] b)
-{
-  int[] r = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  //result has max 16 digits
-  int ai,bi,carry;
-  for (bi=0; bi<8; bi++)
+  
+  //=======================================================================
+  
+  // generates a random float between 0 (included) and hi (excluded)
+  float msws(float hi)
   {
-    carry=0;
-    for (ai=0;ai<8;ai++)
+    return ( hi*msws() ); 
+  }
+  //=======================================================================
+  
+  // generates a random float between lo (included) and hi (excluded)
+  float msws(float lo, float hi)
+  {
+    return ( lo+msws()*(hi-lo) ); 
+  }
+  
+  //=======================================================================
+  
+  int[] add64 (int[] a, int[] b)
+  {
+    int[] r = {0,0,0,0,0,0,0,0,0};  // result has max 9 digits (only 8 to be used)
+    for (int i=0; i<8; i++)
     {
-      r[ai+bi] += carry+a[ai]*b[bi];
-      carry=r[ai+bi] / 256;
-      r[ai+bi] = r[ai+bi] % 256;
+      r[i] += a[i] + b[i]; 
+      if (r[i]>255) 
+      { 
+        r[i] -= 256; 
+        r[i+1] = 1; 
+      }  
     }
-    r[bi+8] += carry;
+    return(r);
   }
-  return(r);
-}
-
-//=======================================================================
-
-int[] sft64(int[] a)
-{
-  int[] r = {a[4],a[5],a[6],a[7],a[0],a[1],a[2],a[3]} ;  
-  return(r);
-}
-
-//=======================================================================
- 
-void seed(int lSeed, int hSeed) 
-{
-  for (int i= 0; i<4; i++)
-  {
-    s[i] = lSeed % 256; 
-    lSeed = lSeed/256;
-    s[i+4] = hSeed % 256;
-    hSeed = hSeed/256; 
-  }
-  if ((s[0] % 2)==0) {s[0] += 1;}  // seed must be an odd number
-  reset()
-}
-
-//=======================================================================
-
-void reset()
-{
-  for (int i=0; i<8; i++)
-  { 
-    x[i]=0;
-    w[i]=0;
-  }
-}
-
-//=======================================================================
-
-String print64(int[] a)
-{
-  float v = 0;
-  String s = hex(a[7],2);
-  for (int i=6; i>=0; i--)
-  {
-    s = s + "," + hex(a[i],2);
-  }
-  for (int i=7; i>=0; i--)
-  {
-    v = v*256.0+a[i];
-  }
-  return(str(v)+" = ["+s+"]");
-}
   
+  //=======================================================================
   
+  int[] mul64 (int[] a, int[] b)
+  {
+    int[] r = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  //result has max 16 digits
+    int ai,bi,carry;
+    for (bi=0; bi<8; bi++)
+    {
+      carry=0;
+      for (ai=0;ai<8;ai++)
+      {
+        r[ai+bi] += carry+a[ai]*b[bi];
+        carry=r[ai+bi] / 256;
+        r[ai+bi] = r[ai+bi] % 256;
+      }
+      r[bi+8] += carry;
+    }
+    return(r);
+  }
+  
+  //=======================================================================
+  
+  int[] sft64(int[] a)
+  {
+    int[] r = {a[4],a[5],a[6],a[7],a[0],a[1],a[2],a[3]} ;  
+    return(r);
+  }
+  
+  //=======================================================================
+   
+  void seed(int lSeed, int hSeed) 
+  {
+    s[0] = lSeed & 0xff;
+    s[1] = (lSeed >> 8) & 0xff;
+    s[2] = (lSeed >> 16) & 0xff;
+    s[3] = (lSeed >> 24) & 0xff;
+    s[4] = hSeed & 0xff;
+    s[5] = (hSeed >> 8) & 0xff;
+    s[6] = (hSeed >> 16) & 0xff;
+    s[7] = (hSeed >> 24) & 0xff;
+    if ((s[0] % 2)==0) {s[0] = (s[0]+1) & 0xff;}  // seed must be an odd number
+    reset();
+  }
+  
+  //=======================================================================
+  
+  void reset()
+  {
+    for (int i=0; i<8; i++)
+    { 
+      x[i]=0;
+      w[i]=0;
+    }
+  }
+  
+  //=======================================================================
+  
+  String print64(int[] a)
+  {
+    String s = hex(a[7],2);
+    for (int i=6; i>=0; i--)
+    {
+      s = s + "," + hex(a[i],2);
+    }
+    return("["+s+"]");
+  }
 }
