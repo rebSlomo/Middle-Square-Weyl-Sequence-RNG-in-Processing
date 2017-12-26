@@ -1,27 +1,26 @@
-// demonstrates how to set up two independent MSWS RNG using the randomizer class
+// demonstrates how to set up two independent MSWS RNG
 // different seeds maybe used for each
 
 void setup()
 {
-  randomizer r1,r2;
+  randomizer r1,r2,r3;
   r1 = new randomizer();
   println("Default r1 seed: ",r1.print64(r1.s));
   r1.seed(1964,1022);
-  println("New r1 seed: ",r1.print64(r1.s));
+  println("New r1 seed:     ",r1.print64(r1.s));
   
   r2 = new randomizer();
   println("Default r2 seed: ",r2.print64(r2.s),"\n");
   
-  for(int i=0; i<10; i++)
-  {
-    println(r1.msws(),"   ",r2.msws());
-  }
-  
+  for(int i=0; i<5; i++) println(r1.msws(),"   ",r2.msws());
+ 
   r2.reset();
   println("\nr1 continued r2 restart: \n");
-    for(int i=0; i<10; i++)
-  {
-    println(r1.msws(),"   ",r2.msws());
-  }
+  for(int i=0; i<5; i++) println(r1.msws(),"   ",r2.msws());
+
+  r3 = new randomizer();
+  println("\nGenerating dice: \n");
+  for(int i=0; i<20; i++) print(int(r3.msws(1,7))," ");
+
   exit();
 }
